@@ -2,35 +2,35 @@ import React, { useState } from "react";
 import NavBar from "../components/NavBar";
 
 export const Add = () => {
-  const [restaurant, setRestaurants] = useState({
-    title: "",
-    type: "",
-    img: "",
+  const [product, setProduct] = useState({
+    name: "",
+    description: "",
+    image: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setRestaurants({ ...restaurant, [name]: value });
+    setProduct({ ...product, [name]: value });
   };
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:3000/restaurants", {
+      const response = await fetch("http://localhost:3000/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(restaurant),
+        body: JSON.stringify(product),
       });
       if (response.ok) {
-        alert("Restaurant added successfully !!");
-        setRestaurants({
-          title: "",
-          type: "",
-          img: "",
+        alert("Product added successfully !!");
+        setProduct({
+          name: "",
+          description: "",
+          image: "",
         });
       } else {
-        alert("Failed to add restaurant.");
+        alert("Failed to add product.");
       }
     } catch (error) {
       console.log(error);
@@ -41,7 +41,7 @@ export const Add = () => {
     <div className="container mx-auto">
       <div>
         <h1 className="title justify-center text-3xl text-center m-5 gap-x-5">
-          Add Stock
+          Add DIY Product
         </h1>
       </div>
       <div className="mb-5 flex justify-center items-center max-w">
@@ -49,38 +49,38 @@ export const Add = () => {
           Name :
           <input
             type="text"
-            name="title"
+            name="name"
             className="grow"
-            placeholder="Add Name"
-            value={restaurant.title}
+            placeholder="Add product name"
+            value={product.name}
             onChange={handleChange}
           />
         </label>
         <label className="input">
-          Details :
+          Description :
           <input
             type="text"
-            name="type"
+            name="description"
             className="grow"
-            placeholder="Add details"
-            value={restaurant.type}
+            placeholder="Add product description"
+            value={product.description}
             onChange={handleChange}
           />
         </label>
         <label className="input">
-          Img :
+          Image URL :
           <input
             type="text"
-            name="img"
+            name="image"
             className="grow"
-            placeholder="Add img"
-            value={restaurant.img}
+            placeholder="Add image URL"
+            value={product.image}
             onChange={handleChange}
           />
         </label>
-        {restaurant.img && (
+        {product.image && (
           <div className="flex items-center gap-2">
-            <img className="h-32" src={restaurant.img} alt="Preview" />
+            <img className="h-32" src={product.image} alt="Preview" />
           </div>
         )}
       </div>
@@ -91,10 +91,10 @@ export const Add = () => {
         <button
           className="btn btn-soft btn-error "
           onClick={() =>
-            setRestaurants({
-              title: "",
-              type: "",
-              img: "",
+            setProduct({
+              name: "",
+              description: "",
+              image: "",
             })
           }
         >

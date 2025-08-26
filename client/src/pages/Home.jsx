@@ -1,45 +1,45 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
-import Restaurants from "../components/Restaurants";
+import Products from "../components/Products";
 
 const Home = () => {
-  const [restaurant, setRestaurants] = useState([]);
-  // const [keyword, setKeyword] = useState("");
-  const [filetedRestarant, setFiletedRestarant] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
   const handleSearch = (keyword) => {
     if (keyword === "") {
+      setFilteredProducts(products);
       return;
     }
-    const result = restaurant.filter((restaurant) => {
+    const result = products.filter((product) => {
       return (
-        restaurant.title.toLowerCase().includes(keyword.toLowerCase()) ||
-        restaurant.type.toLowerCase().includes(keyword.toLowerCase())
+        product.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        product.description.toLowerCase().includes(keyword.toLowerCase())
       );
     });
-    setFiletedRestarant(result);
+    setFilteredProducts(result);
     console.log("keyword", keyword);
   };
+
   useEffect(() => {
-    // call api : getAllRestaurants เรียก API
-    fetch("http://localhost:3000/restaurants")
-      .then((res) => {
-        // convert เเปลงเป็น Json
-        return res.json();
-      })
+    // call api : getAllProducts
+    fetch("http://localhost:3000/products")
+      .then((res) => res.json())
       .then((response) => {
-        setRestaurants(response);
-        setFiletedRestarant(response);
+        setProducts(response);
+        setFilteredProducts(response);
       })
       .catch((err) => {
-        //เช็ค error
         console.log(err.message);
       });
   }, []);
+
   return (
     <div className="container mx-auto">
+      {/* <NavBar /> */}
       <div>
         <h1 className="title justify-center text-3xl text-center m-5 gap-x-5">
-          DIY
+          DIY Products
         </h1>
       </div>
       <div className="mb-5 flex justify-center items-center max-w">
@@ -69,8 +69,7 @@ const Home = () => {
           />
         </label>
       </div>
-      <div></div>
-      <Restaurants restaurants={filetedRestarant} />
+      <Products products={filteredProducts} />
     </div>
   );
 };

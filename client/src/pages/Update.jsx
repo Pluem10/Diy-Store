@@ -1,120 +1,121 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 
 const Update = () => {
-  //1. get id from URL
   const { id } = useParams();
-  const [restaurant, setRestaurants] = useState({
+  const navigate = useNavigate();
+  const [restaurant, setRestaurant] = useState({
     title: "",
     type: "",
     img: "",
   });
-  //2. get restaurant by id
+
+  // ดึงข้อมูล Restaurant ตาม id
   useEffect(() => {
-    fetch("http://localhost:3000/restaurants/" + id)
-      .then((res) => {
-        return res.json();
-      })
-      .then((response) => {
-        setRestaurants(response);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    fetch(`http://localhost:3000/restaurants/${id}`)
+      .then((res) => res.json())
+      .then((data) => setRestaurant(data))
+      .catch((err) => console.log(err.message));
   }, [id]);
+
+  // handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setRestaurants({ ...restaurant, [name]: value });
+    setRestaurant({ ...restaurant, [name]: value });
   };
 
+  // handle submit
   const handleSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:3000/restaurants/" + id, {
+      const response = await fetch(`http://localhost:3000/restaurants/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(restaurant),
       });
       if (response.ok) {
-        alert("Restaurant added successfully !!");
-        setRestaurants({
-          title: "",
-          type: "",
-          img: "",
-        });
+        alert("Restaurant updated successfully!");
+        navigate("/"); // กลับไปหน้า Home หรือ list
       } else {
-        alert("Failed to add restaurant.");
+        alert("Failed to update restaurant.");
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  // handle cancel
+  const handleCancel = () => {
+    setRestaurant({ title: "", type: "", img: "" });
+    navigate("/"); // กลับไปหน้า list
+  };
+
   return (
-    <div className="container mx-auto">
-      <div>
-        <h1 className="title justify-center text-3xl text-center m-5 gap-x-5">
-          Update Restaurant
-        </h1>
-      </div>
-      <div className="mb-5 flex justify-center items-center max-w">
-        <label className="input">
-          Name :
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold text-center mb-6">Update Restaurant</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Name */}
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text">Name</span>
+          </label>
           <input
             type="text"
             name="title"
-            className="grow"
-            placeholder="Add Name"
             value={restaurant.title}
             onChange={handleChange}
+            placeholder="Enter restaurant name"
+            className="input input-bordered w-full"
           />
-        </label>
-        <label className="input">
-          Details :
+        </div>
+
+        {/* Details */}
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text">Details</span>
+          </label>
           <input
             type="text"
             name="type"
-            className="grow"
-            placeholder="Add details"
             value={restaurant.type}
             onChange={handleChange}
+            placeholder="Enter details"
+            className="input input-bordered w-full"
           />
-        </label>
-        <label className="input">
-          Img :
+        </div>
+
+        {/* Image URL */}
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text">Image URL</span>
+          </label>
           <input
             type="text"
             name="img"
-            className="grow"
-            placeholder="Add img"
             value={restaurant.img}
             onChange={handleChange}
+            placeholder="Enter image URL"
+            className="input input-bordered w-full"
           />
-        </label>
+        </div>
+
+        {/* Image Preview */}
         {restaurant.img && (
-          <div className="flex items-center gap-2">
-            <img className="h-32" src={restaurant.img} alt="Preview" />
+          <div className="flex justify-center items-center">
+            <img
+              className="h-48 rounded-md shadow"
+              src={restaurant.img}
+              alt="Preview"
+            />
           </div>
         )}
       </div>
-      <div>
-        <button
-          className="btn btn-info justify-self-center text-1xl text-center m-2 gap-x-5 space-x-5"
-          onClick={handleSubmit}
-        >
+
+      {/* Buttons */}
+      <div className="flex justify-center gap-4 mt-6">
+        <button className="btn btn-info" onClick={handleSubmit}>
           Update
         </button>
-        <button
-          className="btn btn-secondary justify-self-center justify-center  text-1xl text-center m-2 gap-x-5 space-x-5"
-          onClick={() =>
-            setRestaurants({
-              title: "",
-              type: "",
-              img: "",
-            })
-          }
-        >
+        <button className="btn btn-outline" onClick={handleCancel}>
           Cancel
         </button>
       </div>
