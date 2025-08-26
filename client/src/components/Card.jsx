@@ -1,17 +1,24 @@
 import React from "react";
+import { useAuthContext } from "../context/AuthContext";
 
-const Card = (props) => {
+const Card = ({ id, name, description, image }) => {
+  const { user } = useAuthContext();
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?"
     );
     if (!confirmDelete) return;
     try {
-      const response = await fetch("http://localhost:3000/products/" + id, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/v1/products/" + id,
+        {
+          method: "DELETE",
+        }
+      );
       if (response.ok) {
-        alert("Deleted product successfully!");
+        alert("Product deleted successfully!");
+        window.location.reload(); // Reload the page to reflect changes
       } else {
         alert("Failed to delete product.");
       }
@@ -23,24 +30,35 @@ const Card = (props) => {
   return (
     <div className="card bg-base-100 w-96 shadow-sm">
       <figure>
-        <img src={props.image} alt={props.name} />
+        <img src={image} alt={name} />
       </figure>
       <div className="card-body">
         <h2 className="card-title">
-          {props.name}
+          {name}
           <div className="badge badge-secondary">NEW</div>
         </h2>
-        <p>{props.description}</p>
+        <p>{description}</p>
         <div className="card-actions justify-end">
-          <a href={"/update/" + props.id} className="btn btn-warning">
-            Edit
-          </a>
-          <button
-            onClick={() => handleDelete(props.id)}
-            className="btn btn-error"
-          >
-            Delete
-          </button>
+          {user && user.authorities.includes("ROLE_ADMIN") && (
+            <>
+              <a href={"/update/" + id} className="btn btn-warning">
+                Edit
+              </a>
+              <button
+                onClick={() => handleDelete(id)}
+                className="btn btn-error"
+              >
+                Delete
+              </button>
+            </>
+          )}
+          {user &&
+            !user.authorities.includes("ROLE_ADMIN") &&
+            user.authorities.includes("ROLE_MODERATOR") && (
+              <a href={"/update/" + id} className="btn btn-warning">
+                Edit
+              </a>
+            )}
         </div>
       </div>
     </div>

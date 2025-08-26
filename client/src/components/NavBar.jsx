@@ -1,18 +1,21 @@
 import React from "react";
+import { useAuthContext } from "../context/AuthContext";
+import UserProfile from "./UserProfile";
 
 const NavBar = () => {
+  const { user } = useAuthContext();
   const menuItems = [
     {
       name: "Search",
       url: "/",
     },
     {
-      name: "Add",
+      name: "Add Product",
       url: "/add",
     },
     {
-      name: "About",
-      url: "/about",
+      name: "About Us",
+      url: "/aboutus",
     },
   ];
 
@@ -40,27 +43,43 @@ const NavBar = () => {
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
           >
-            {menuItems.map((item, index) => (
-              <li key={index}>
+            {menuItems.map((item) => (
+              <li key={item.url}>
                 <a href={item.url}>{item.name}</a>
               </li>
             ))}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl">DIY STORE</a>
+        <a className="btn btn-ghost text-xl" href="/">
+          DIY STORE
+        </a>
       </div>
+
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 space-x-5">
-          {menuItems.map((item, index) => (
-            <li key={index}>
+          {menuItems.map((item) => (
+            <li key={item.url}>
               <a href={item.url}>{item.name}</a>
             </li>
           ))}
         </ul>
       </div>
+
       <div className="navbar-end space-x-2">
-        <button className="btn btn-outline btn-primary">Register</button>
-        <button className="btn btn-outline btn-secondary">Login</button>
+        {user ? (
+          <div>
+            <UserProfile />
+          </div>
+        ) : (
+          <div className="space-x-2">
+            <a href="/signUp" className="btn btn-outline btn-primary">
+              Register
+            </a>
+            <a href="/login" className="btn btn-outline btn-secondary">
+              Login
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

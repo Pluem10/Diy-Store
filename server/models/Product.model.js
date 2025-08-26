@@ -11,21 +11,17 @@ const Product = sequelize.define("product", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  category: {
+  description: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  imageUrl: {
+  image: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   price: {
     type: DataTypes.FLOAT,
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: true, // ใส่เป็น optional ถ้าอยากขายสินค้า
   },
 });
 
