@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import NavBar from "../components/NavBar";
 import Products from "../components/Products";
+import data from "../db.json"; // ✅ import db.json มาใช้ตรง ๆ
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -12,31 +12,23 @@ const Home = () => {
       return;
     }
     const result = products.filter((product) => {
-      return (
-        product.name.toLowerCase().includes(keyword.toLowerCase()) ||
-        product.description.toLowerCase().includes(keyword.toLowerCase())
-      );
-    });
+  return (
+    product.name.toLowerCase().includes(keyword.toLowerCase()) ||
+    (product.type && product.type.toLowerCase().includes(keyword.toLowerCase()))
+  );
+});
+
     setFilteredProducts(result);
     console.log("keyword", keyword);
   };
 
   useEffect(() => {
-    // call api : getAllProducts
-    fetch("http://localhost:3000/products")
-      .then((res) => res.json())
-      .then((response) => {
-        setProducts(response);
-        setFilteredProducts(response);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  }, []);
+  setProducts(data.products);          // <-- array จริง
+  setFilteredProducts(data.products);  // <-- array จริง
+}, []);
 
   return (
     <div className="container mx-auto">
-      {/* <NavBar /> */}
       <div>
         <h1 className="title justify-center text-3xl text-center m-5 gap-x-5">
           DIY Products

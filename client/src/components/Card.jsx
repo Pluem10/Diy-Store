@@ -1,6 +1,6 @@
 import React from "react";
 
-const Card = (props) => {
+const Card = ({ id, name, description, image }) => {
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?"
@@ -23,20 +23,20 @@ const Card = (props) => {
   return (
     <div className="card bg-base-100 w-96 shadow-sm">
       <figure>
-        <img src={props.image} alt={props.name} />
+        <img src={image} alt={name} />
       </figure>
       <div className="card-body">
         <h2 className="card-title">
-          {props.name}
+          {name}
           <div className="badge badge-secondary">NEW</div>
         </h2>
-        <p>{props.description}</p>
+        <p>{description}</p>
         <div className="card-actions justify-end">
-          <a href={"/update/" + props.id} className="btn btn-warning">
+          <a href={"/update/" + id} className="btn btn-warning">
             Edit
           </a>
           <button
-            onClick={() => handleDelete(props.id)}
+            onClick={() => handleDelete(id)}
             className="btn btn-error"
           >
             Delete

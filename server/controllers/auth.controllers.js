@@ -1,97 +1,103 @@
-import db from "../models/index.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import config from "../config/auth.config.js";
-import { Op } from "sequelize";
-
+import db from "../model/index.js";
 const User = db.User;
 const Role = db.Role;
+import bcrypt from "bcryptjs"; //ใช้ในการเข้ารหัสรหัสผ่าน
+import jwt from "jsonwebtoken"; //ใช้ในการแลกเปลี่ยนข้อมูลระหว่างเซิร์ฟเวอร์และไคลเอนต์
+import config from "../config/auth.config.js"; //ใช้ในการเข้าถึงค่า secret key สำหรับ JWT
+
+import { Op } from "sequelize"; //ใช้ในการจัดการกับการค้นหาข้อมูลในฐานข้อมูล
 
 const authController = {};
 
-// SignUp
-authController.signUp = async (req, res) => {
+authController.register = async (req, res) => {
   try {
-    const { username, name, email, password, roles } = req.body;
+    const { username, name, email, password } = req.body;
     if (!username || !name || !email || !password) {
-      return res.status(400).json({
-        message: "Username, Name, Email or Password cannot be empty!",
-      });
-    }
-
-    const existingUser = await User.findOne({ where: { username } });
-    if (existingUser) {
-      return res.status(400).json({ message: "Username already exists!" });
-    }
-
-    const hashedPassword = bcrypt.hashSync(password, 8);
-    const newUser = await User.create({
-      username,
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    let assignedRoles = [];
-    if (roles && roles.length > 0) {
-      const foundRoles = await Role.findAll({
-        where: { name: { [Op.or]: roles } },
-      });
-      if (foundRoles.length === 0) {
-        return res.status(400).json({ message: "Role not found!" });
-      }
-      assignedRoles = foundRoles;
-    } else {
-      assignedRoles = await Role.findAll({ where: { id: 1 } }); // default role USER
-    }
-
-    await newUser.setRoles(assignedRoles);
-    res.json({ message: "User was registered successfully!" });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message || "Something went wrong while creating the user",
-    });
-  }
-};
-
-// SignIn
-authController.signIn = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username or Password cannot be empty" });
+      return res.status(400).json({ message: "Username, Name, Email or Password can not be empty!" });
     }
 
     const user = await User.findOne({ where: { username } });
-    if (!user) return res.status(404).json({ message: "Username not found!" });
+    if (user) {
+      return res.status(400).json({ message: "Username already exists!" });
+    }
 
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
-    if (!passwordIsValid)
-      return res.status(401).json({ message: "Invalid Password!" });
+    const newUser = {
+      username,
+      name,
+      email,
+      password: bcrypt.hashSync(password, 8),
+    };
 
-    const token = jwt.sign({ id: user.id }, config.secret, {
-      expiresIn: 86400,
-    }); // 24h
+    const createdUser = await User.create(newUser);
 
-    const roles = await user.getRoles();
-    const authorities = roles.map((role) => "ROLE_" + role.name.toUpperCase());
+    if (req.body.roles) {
+      const roles = await Role.findAll({
+        where: {
+          name: { [Op.or]: req.body.roles },
+        },
+      });
+      if (roles.length === 0) {
+        return res.status(400).json({ message: "Role not found!" });
+      }
+      await createdUser.setRoles(roles);
+    } else {
+      await createdUser.setRoles([1]);
+    }
 
-    res.json({
-      token,
-      authorities,
-      userInfo: {
-        username: user.username,
-        name: user.name,
-        email: user.email,
-      },
-    });
+    return res.status(201).json({ message: "User was registered successfully!" });
   } catch (error) {
-    res.status(500).json({
-      message: error.message || "Something went wrong while signing in",
+    console.error("Register error:", error);
+    return res.status(500).json({
+      message: error.message || "Something error while create the user",
     });
   }
 };
+
+authController.signin = async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    res.status(400).send({ message: "Username or Password are missing!" });
+    return;
+  }
+  // Select * from user where username = username
+  await User.findOne({ where: { username } })
+   .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: "User not found!" });
+        return;
+      }
+      // Check password
+      const isPasswordValid = bcrypt.compareSync(password, user.password);
+      if (!isPasswordValid) {
+        res.status(401).send({ accessToken: null, message: "Invalid Password!" });
+        return;
+      }
+      // Create token
+      const token = jwt.sign({ id: user.username }, config.secret, {
+        expiresIn: 86400, // 24 hours
+      });
+      // Get roles
+      const authorities = [];
+      user.getRoles().then((roles) => {
+        for (let i = 0; i < roles.length; i++) {
+          authorities.push("ROLE_" + roles[i].name.toUpperCase());
+        }
+        res.status(200).send({
+          accessToken: token,
+          roles: authorities,
+          userInfo: {
+            username: user.username,
+            name: user.name,
+            email: user.email,
+          },
+        });
+      });
+    })
+    .catch((error) => {
+      res.status(500).send({ message: error.message || "Something error while signin" });
+    }); 
+};
+
+
 
 export default authController;

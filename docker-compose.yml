@@ -1,21 +1,24 @@
 services:
   server:
-    build:
+    build: 
       context: ./server
       dockerfile: Dockerfile.server
     ports:
       - "5000:5000"
     volumes:
-      - "./server:/app"
-      - "/app/node_modules"
+      - ./server:/app
+      - /app/node_modules
+    command: nodemon --legacy-watch index.js
+    restart: always
     environment:
+      - CHOKIDAR_USEPOLLING=true
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
       - HOST=db
       - USER=postgres
       - PASSWORD=postgres
-      - DB=app
+      - DB_NAME=app_db
       - DB_PORT=5432
-      - SERVER_PORT=5000
+      - SERVER_PORT=5001
     depends_on:
       - db
 
@@ -32,16 +35,17 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - server
-
+      - db
+      
   db:
     image: postgres:16
     restart: always
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
     volumes:
       - pgdata:/var/lib/postgresql/data
 
